@@ -49,7 +49,7 @@ def main():
     print(f"Loading weights from {args.weights}")
     
     model = SwinIR(
-        img_size=256,
+        img_size=256, #128
         patch_size=1,
         in_chans=3,
         out_chans=1,
