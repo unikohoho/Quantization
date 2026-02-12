@@ -7,20 +7,40 @@ from pathlib import Path
 from PIL import Image
 from tqdm import tqdm
 import sys
-
-# Ensure we can find basicsr
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from basicsr.models.archs.NAFNet_arch import NAFNet
 from dataset import Mayo2dDataset
 from torchvision.utils import save_image
+
+def load_tiff(path):
+    img = Image.open(path)
+    img_array = np.array(img, dtype=np.float32)
+    return img_array
+
+def collect_test_data(input_dir):
+    input_dir = Path(input_dir)
+    files = sorted(list(input_dir.glob("*.tiff")) + list(input_dir.glob("*.tif")))
+    if len(files) > 0:
+         return [{'subfolder': '', 'files': files}]
+
+    subfolders = sorted([d for d in input_dir.iterdir() if d.is_dir()])
+    test_data = []
+    
+    for subfolder in subfolders:
+        tiff_files = sorted(list(subfolder.glob("*.tiff")) + list(subfolder.glob("*.tif")))
+        if len(tiff_files) >= 1:
+            test_data.append({
+                'subfolder': subfolder.name,
+                'files': tiff_files
+            })
+    return test_data
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_gt', type=str, default='/data1/uni/data/mayo2d/test/full_1mm')
     parser.add_argument('--test_lq', type=str, default='/data1/uni/data/mayo2d/test/quarter_1mm')
     parser.add_argument('--model_path', type=str, default='./experiments/models/model_latest.pth')
-    parser.add_argument('--output_dir', type=str, default='/data1/uni/data/mayo2d/test/out/NAFNet')
+    parser.add_argument('--output_dir', type=str, default='/data1/uni/data/mayo2d/test/out/NAFNet_test')
     parser.add_argument('--gpu', type=str, default='2')
     
     # Model args - must match training
@@ -37,8 +57,8 @@ def main():
     
     os.makedirs(args.output_dir, exist_ok=True)
 
-    test_dataset = Mayo2dDataset(args.test_gt, args.test_lq, patch_size=0, is_train=False, n_patches=1)
-    test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4, pin_memory=True)
+    test_data = collect_test_data(args.test_lq)
+    print(f"Found {len(test_data)} test sequences/folders")
 
     # Model
     model = NAFNet(
@@ -54,36 +74,43 @@ def main():
     state_dict = torch.load(args.model_path, map_location=device)
     model.load_state_dict(state_dict)
     model.eval()
-
-    print(f"Start Inference on {len(test_dataset)} frames...")
     
-    with torch.no_grad():
-        for i, (lq, gt) in enumerate(tqdm(test_loader)):
-            lq = lq.to(device)
+    for seq in test_data:
+        subfolder = seq['subfolder']
+        files = seq['files']
+        
+        output_subfolder = os.path.join(args.output_dir, subfolder)
+        os.makedirs(output_subfolder, exist_ok=True)
+        
+        for i in tqdm(range(len(files)), desc=f"Processing {subfolder}"):
+            # Boundaries
+            if i == 0:
+                idx_prev, idx_curr, idx_next = 0, 0, min(1, len(files)-1)
+            elif i == len(files) - 1:
+                idx_prev, idx_curr, idx_next = max(0, i-1), i, i
+            else:
+                idx_prev, idx_curr, idx_next = i-1, i, i+1
             
-            # Forward
-            output = model(lq)
+            img_prev = load_tiff(files[idx_prev])
+            img_curr = load_tiff(files[idx_curr])
+            img_next = load_tiff(files[idx_next])
             
-            output = torch.clamp(output, 0, 1)
+            # Stack (1, 3, H, W)
+            if img_curr.ndim == 2:
+                img_stack = np.stack([img_prev, img_curr, img_next], axis=0)
+            else:
+                    img_stack = np.stack([img_prev, img_curr, img_next], axis=0)
+                    if img_stack.ndim == 4 and img_stack.shape[3] == 1:
+                        img_stack = img_stack.squeeze(3)
+
+            img_tensor = torch.from_numpy(img_stack).unsqueeze(0).float().to(device)
             
-            out_img = output.squeeze().cpu().numpy() 
+            with torch.no_grad():
+                output = model(img_tensor)
             
-            current_file_idx = i  
-            
-            frame_info = test_dataset.frame_list[current_file_idx]
-            pair_idx = frame_info['pair_idx']
-            frame_idx = frame_info['frame_idx']
-            
-            pair = test_dataset.data_pairs[pair_idx]
-            original_filename = pair['lq_files'][frame_idx].name
-            subfolder_name = pair['subfolder']
-            
-            # Create subfolder in output_dir
-            save_subdir = os.path.join(args.output_dir, subfolder_name)
-            os.makedirs(save_subdir, exist_ok=True)
-            
-            save_path = os.path.join(save_subdir, original_filename)
-            
+            # Save
+            out_img = output.squeeze().cpu().numpy()  
+            save_path = os.path.join(output_subfolder, files[i].name)
             Image.fromarray(out_img).save(save_path)
             
     print("Inference Finished.")
