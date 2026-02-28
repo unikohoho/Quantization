@@ -15,11 +15,11 @@ from ours_quant import convert_to_quantized
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_gt', type=str, default='/data1/uni/data/mayo2d/test/full_1mm')
-    parser.add_argument('--test_lq', type=str, default='/data1/uni/data/mayo2d/test/quarter_1mm')
+    parser.add_argument('--test_gt', type=str, default='<DATA_ROOT>/mayo2d/test/full_1mm')
+    parser.add_argument('--test_lq', type=str, default='<DATA_ROOT>/mayo2d/test/quarter_1mm')
     parser.add_argument('--model_path', type=str, required=True, help='Path to quantized model')
     parser.add_argument('--bit', type=int, default=4)
-    parser.add_argument('--output_dir', type=str, default='/data1/uni/data/mayo2d/test/out/Restormer_ours_output')
+    parser.add_argument('--output_dir', type=str, default='<DATA_ROOT>/mayo2d/test/out/Restormer_ours_output')
     parser.add_argument('--gpu', type=str, default='0')
     
     # Model args

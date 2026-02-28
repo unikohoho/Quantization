@@ -37,10 +37,10 @@ def collect_test_data(input_dir):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_gt', type=str, default='/data1/uni/data/mayo2d/test/full_1mm')
-    parser.add_argument('--test_lq', type=str, default='/data1/uni/data/mayo2d/test/quarter_1mm')
+    parser.add_argument('--test_gt', type=str, default='<DATA_ROOT>/mayo2d/test/full_1mm')
+    parser.add_argument('--test_lq', type=str, default='<DATA_ROOT>/mayo2d/test/quarter_1mm')
     parser.add_argument('--model_path', type=str, default='./experiments/models/model_latest.pth')
-    parser.add_argument('--output_dir', type=str, default='/data1/uni/data/mayo2d/test/out/NAFNet')
+    parser.add_argument('--output_dir', type=str, default='<DATA_ROOT>/mayo2d/test/out/NAFNet')
     parser.add_argument('--gpu', type=str, default='2')
     
     # Model args - must match training

@@ -37,8 +37,8 @@ def collect_test_data(input_dir):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dir', default='/data1/uni/data/mayo2d/test/quarter_1mm', type=str)
-    parser.add_argument('--result_dir', default='/data1/uni/data/mayo2d/test/out/SwinIR', type=str)
+    parser.add_argument('--input_dir', default='<DATA_ROOT>/mayo2d/test/quarter_1mm', type=str)
+    parser.add_argument('--result_dir', default='<DATA_ROOT>/mayo2d/test/out/SwinIR', type=str)
     parser.add_argument('--weights', default='experiments/model_latest.pth', type=str)
     parser.add_argument('--gpu', default='2', type=str)
     args = parser.parse_args()

@@ -21,11 +21,11 @@ from dataset import Mayo2dDataset
 def main():
     parser = argparse.ArgumentParser()
     # Path args
-    parser.add_argument('--train_gt', type=str, default='/data1/uni/data/mayo2d/train/full_1mm')
-    parser.add_argument('--train_lq', type=str, default='/data1/uni/data/mayo2d/train/quarter_1mm')
+    parser.add_argument('--train_gt', type=str, default='<DATA_ROOT>/mayo2d/train/full_1mm')
+    parser.add_argument('--train_lq', type=str, default='<DATA_ROOT>/mayo2d/train/quarter_1mm')
     # Use different paths for validation if needed, or same structure
-    parser.add_argument('--val_gt', type=str, default='/data1/uni/data/mayo2d/test/full_1mm')
-    parser.add_argument('--val_lq', type=str, default='/data1/uni/data/mayo2d/test/quarter_1mm')
+    parser.add_argument('--val_gt', type=str, default='<DATA_ROOT>/mayo2d/test/full_1mm')
+    parser.add_argument('--val_lq', type=str, default='<DATA_ROOT>/mayo2d/test/quarter_1mm')
     
     # Training args
     parser.add_argument('--batch_size', type=int, default=4) # Increased batch size for lightweight model
