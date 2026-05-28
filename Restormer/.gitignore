@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models and checkpoints
+*.pth
+*.ckpt
+*.pt
+experiments/
+models/*.pth
+
+# OS
+.DS_Store
+Thumbs.db
