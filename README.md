@@ -2,9 +2,9 @@
 
 This repository contains the implementation associated with our MICCAI 2026 paper on post-training quantization for medical image denoising.
 
-The project explores how low-bit post-training quantization can be applied to medical image restoration models while reducing quantization-induced degradation. The repository includes code organized for three representative restoration backbones:
+The project explores how low-bit post-training quantization can be applied to medical image denoising models while reducing quantization-induced degradation. The repository includes code organized for three denoising backbones:
 
-* `NAFNet/`
+* `NAFNet/` 
 * `SwinIR/`
 * `Restormer/`
 
